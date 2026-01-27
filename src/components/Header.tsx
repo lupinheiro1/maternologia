@@ -31,7 +31,9 @@ const Header = () => {
     >
       <div className="container flex items-center justify-between">
         <a href="#" className="flex items-center gap-2">
-          <span className="font-display text-2xl md:text-3xl font-semibold text-primary">
+          <span className={`text-2xl md:text-3xl font-semibold transition-colors ${
+            isScrolled ? "text-primary" : "text-white drop-shadow-md"
+          }`}>
             Maternologia
           </span>
         </a>
@@ -44,7 +46,9 @@ const Header = () => {
               href={item.href}
               target={item.external ? "_blank" : undefined}
               rel={item.external ? "noopener noreferrer" : undefined}
-              className="text-foreground/80 hover:text-primary transition-colors font-medium text-sm tracking-wide"
+              className={`hover:text-primary transition-colors font-medium text-sm tracking-wide ${
+                isScrolled ? "text-foreground/80" : "text-white/90 drop-shadow-sm"
+              }`}
             >
               {item.label}
             </a>
