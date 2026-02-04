@@ -1,108 +1,147 @@
 
-# Plano: Hero Section com Foto de Fundo + Tipografia Sans-Serif + Lazy Loading
+
+# Plano: Corrigir Modais + Newsletter Customizada + Nova Foto
 
 ## Resumo
 
-Vou transformar a Hero Section para usar as suas fotos como fundo (uma para desktop, outra para mobile), trocar a tipografia para sans-serif em todo o site, e configurar lazy loading inteligente para otimizar a performance.
+Vou implementar tres correcoes principais:
+1. **Modais funcionais** com formularios MailerLite carregando corretamente
+2. **Newsletter Section customizada** com campos de nome e email estilizados (conectados ao MailerLite)
+3. **Trocar foto da autora** para a nova imagem enviada
 
 ---
 
-## 1. Copiar as Imagens para o Projeto
+## 1. Corrigir Modais do MailerLite
 
-- Copiar `hero-section-maternologia-mae-bebe.webp` para `src/assets/hero-desktop.webp`
-- Copiar `hero-section-maternologia-mae-bebe-mobile.webp` para `src/assets/hero-mobile.webp`
+### Problema
+Os formularios embarcados do MailerLite nao renderizam dentro dos modais porque o script nao detecta elementos adicionados ao DOM apos o carregamento inicial.
 
----
+### Solucao Tecnica
+- Usar `key` dinamico baseado em timestamp para forcar React a recriar o elemento `ml-embedded`
+- Implementar multiplas tentativas de `ml("refresh")` com intervalos progressivos (200ms, 500ms, 1000ms)
+- Garantir que o script so e inicializado uma vez globalmente
 
-## 2. Nova Hero Section
-
-### Layout Desktop
-- Foto paisagem cobrindo toda a tela
-- Texto posicionado a esquerda (50-60% da largura)
-- Overlay gradiente da esquerda para direita (mais escuro onde fica o texto)
-- Imagem posicionada para preservar voce e o bebe (`object-position: right center`)
-
-### Layout Mobile
-- Foto retrato cobrindo toda a tela
-- Texto centralizado na parte inferior
-- Overlay gradiente de baixo para cima
-
-### Carregamento
-- Ambas as imagens com `loading="eager"` e `fetchpriority="high"` para carregar imediatamente
-- Alternancia entre imagens via CSS (`hidden md:block` / `block md:hidden`)
+### Arquivos Afetados
+- `src/components/NewsletterModal.tsx`
+- `src/components/WaitlistModal.tsx`
 
 ---
 
-## 3. Tipografia Sans-Serif
+## 2. Newsletter Section com Formulario Customizado
 
-### Alteracoes no CSS Global (`src/index.css`)
-- Remover importacao da fonte Playfair Display
-- Manter apenas Inter como fonte principal
+### Problema Atual
+A secao usa apenas `<div class="ml-embedded">` que renderiza o formulario padrao do MailerLite, sem controle visual.
 
-### Alteracoes no Tailwind (`tailwind.config.ts`)
-- Atualizar `font-display` para usar Inter ou criar uma variacao bold
-- Manter consistencia com o estilo Big Little Feelings
+### Nova Abordagem
+Criar um formulario customizado estilizado com:
+- Campo de **Nome** (Input do shadcn/ui)
+- Campo de **Email** (Input do shadcn/ui)
+- Botao de **Submit** estilizado
+- Formulario MailerLite **oculto** que recebe os dados e faz o submit real
 
----
+### Fluxo de Dados
 
-## 4. Lazy Loading em Todo o Site
-
-### Imagens que carregam imediatamente (Hero)
-```
-loading="eager"
-fetchpriority="high"
-```
-
-### Imagens com Lazy Loading (resto do site)
-```
-loading="lazy"
+```text
+Usuario preenche formulario customizado
+         |
+         v
+Ao clicar "Inscrever", JavaScript:
+  1. Preenche campos ocultos do MailerLite
+  2. Dispara submit do formulario MailerLite
+         |
+         v
+MailerLite processa e mostra mensagem de sucesso
 ```
 
-### Componentes afetados
-- **BlogSection**: Imagens dos artigos (quando forem adicionadas)
-- **AboutSection**: Foto da Luiza (quando for adicionada)
-- **CoursesSection**: Imagens dos cursos (se adicionadas futuramente)
+### Design Visual
+
+```text
++------------------------------------------+
+|      [icone] Newsletter quinzenal        |
+|                                          |
+|   Receba acolhimento na sua caixa...     |
+|   Reflexoes, conteudos exclusivos...     |
+|                                          |
+|   +----------------------------------+   |
+|   | Nome                             |   |
+|   +----------------------------------+   |
+|   +----------------------------------+   |
+|   | E-mail                           |   |
+|   +----------------------------------+   |
+|   +----------------------------------+   |
+|   |     Quero receber! [botao]       |   |
+|   +----------------------------------+   |
+|                                          |
++------------------------------------------+
+```
+
+### Arquivos Afetados
+- `src/components/NewsletterSection.tsx` (reescrever com formulario customizado)
 
 ---
 
-## Arquivos a Serem Modificados
+## 3. Trocar Foto da Autora
+
+### Acao
+- Copiar `user-uploads://autor_luiza_resized.webp` para `src/assets/luiza-pinheiro.webp` (substituindo a atual)
+- Manter mesmo import no `AboutSection.tsx`
+
+### Arquivo Afetado
+- `src/assets/luiza-pinheiro.webp` (substituir)
+
+---
+
+## Detalhes Tecnicos
+
+### NewsletterSection.tsx - Nova Estrutura
+
+```text
+Estado:
+- name: string
+- email: string
+- isSubmitting: boolean
+- isSuccess: boolean
+
+Logica:
+1. Renderizar formulario MailerLite oculto (visibility: hidden, height: 0)
+2. Formulario customizado visivel com inputs estilizados
+3. No submit:
+   a. Buscar inputs dentro do ml-embedded oculto
+   b. Preencher com valores do state
+   c. Disparar click no botao submit do MailerLite
+   d. Mostrar feedback de sucesso
+```
+
+### Modais - Logica de Refresh Melhorada
+
+```text
+useEffect quando open = true:
+1. Gerar refreshKey unico (Date.now())
+2. Carregar script MailerLite se nao existir
+3. Tentar ml("refresh") em:
+   - 200ms
+   - 500ms
+   - 1000ms
+4. Usar MutationObserver para detectar quando form renderizou
+```
+
+---
+
+## Arquivos a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/assets/` | Adicionar 2 imagens da hero |
-| `src/index.css` | Remover Playfair Display, ajustar tipografia |
-| `tailwind.config.ts` | Atualizar font-display para sans-serif |
-| `src/components/HeroSection.tsx` | Reestruturar com foto de fundo e layout novo |
-| `src/components/Header.tsx` | Ajustar cores do texto para contraste com a imagem |
-| `src/components/AboutSection.tsx` | Adicionar lazy loading nas imagens |
-| `src/components/BlogSection.tsx` | Adicionar lazy loading nas imagens |
-| `src/components/CoursesSection.tsx` | Remover font-display dos titulos |
-
----
-
-## Estrutura da Nova HeroSection
-
-```text
-<section> (relative, min-h-screen)
-  |
-  |-- <img> desktop (hidden em mobile, object-cover, eager loading)
-  |-- <img> mobile (hidden em desktop, object-cover, eager loading)
-  |
-  |-- <div> overlay (gradiente para legibilidade)
-  |
-  |-- <div> container (relative, z-10)
-        |-- <h1> headline (texto claro, sombra sutil)
-        |-- <p> subheadline
-        |-- <Button> CTA
-        |-- <a> seta para baixo
-```
+| `src/assets/luiza-pinheiro.webp` | Substituir pela nova foto |
+| `src/components/NewsletterSection.tsx` | Formulario customizado com nome + email |
+| `src/components/NewsletterModal.tsx` | Key dinamico + multiplas tentativas de refresh |
+| `src/components/WaitlistModal.tsx` | Key dinamico + multiplas tentativas de refresh |
 
 ---
 
 ## Resultado Esperado
 
-- Hero com visual impactante igual ao Big Little Feelings
-- Foto preservada corretamente em ambos os tamanhos de tela
-- Tipografia moderna e limpa (sans-serif)
-- Site otimizado com lazy loading (apenas hero carrega imediatamente)
-- Header continua transparente no topo e fixo ao rolar
+- Modais abrem com formularios do MailerLite visiveis e funcionais
+- Secao Newsletter tem visual customizado alinhado ao design do site
+- Campos de nome e email integrados com MailerLite
+- Foto da autora atualizada com a nova imagem
+
