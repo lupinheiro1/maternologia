@@ -59,15 +59,16 @@ const Header = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className={`md:hidden ${isScrolled ? "text-foreground" : "text-white"}`}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Abrir Menu"
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="absolute top-full left-0 right-0 bg-background/98 backdrop-blur-md shadow-lg md:hidden animate-fade-in">
+          <div className="absolute top-full left-0 right-0 bg-sage shadow-lg md:hidden animate-fade-in">
             <nav className="flex flex-col py-4">
               {navItems.map((item) => (
                 <a
@@ -75,7 +76,7 @@ const Header = () => {
                   href={item.href}
                   target={item.external ? "_blank" : undefined}
                   rel={item.external ? "noopener noreferrer" : undefined}
-                  className="px-6 py-3 text-foreground/80 hover:text-primary hover:bg-muted/50 transition-colors font-medium"
+                  className="px-6 py-3 text-white hover:text-mustard hover:bg-white/10 transition-colors font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}

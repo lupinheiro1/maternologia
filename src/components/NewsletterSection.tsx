@@ -1,17 +1,22 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mail, Sparkles } from "lucide-react";
+import { useEffect } from "react";
+import { Sparkles } from "lucide-react";
 
 const NewsletterSection = () => {
-  const [email, setEmail] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle newsletter signup
-    console.log("Newsletter signup:", email);
-    setEmail("");
-  };
+  useEffect(() => {
+    // Load MailerLite script
+    const w = window as any;
+    if (!w.ml) {
+      w.ml = function () {
+        (w.ml.q = w.ml.q || []).push(arguments);
+      };
+      const l = document.createElement("script");
+      l.async = true;
+      l.src = "https://assets.mailerlite.com/js/universal.js";
+      const n = document.getElementsByTagName("script")[0];
+      n.parentNode?.insertBefore(l, n);
+      w.ml("account", "2088191");
+    }
+  }, []);
 
   return (
     <section id="newsletter" className="py-24 bg-background relative overflow-hidden">
@@ -31,7 +36,7 @@ const NewsletterSection = () => {
           </div>
 
           <h2 
-            className="font-display text-3xl md:text-4xl font-medium mb-4 opacity-0 animate-fade-up"
+            className="font-sans text-3xl md:text-4xl font-semibold mb-4 opacity-0 animate-fade-up"
             style={{ animationDelay: "0.2s" }}
           >
             Receba acolhimento na sua caixa de entrada
@@ -45,30 +50,12 @@ const NewsletterSection = () => {
             Sem spam, sem cobrança. Só o que faz florescer.
           </p>
 
-          <form 
-            onSubmit={handleSubmit} 
-            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto opacity-0 animate-fade-up"
+          <div 
+            className="max-w-md mx-auto opacity-0 animate-fade-up"
             style={{ animationDelay: "0.4s" }}
           >
-            <div className="relative flex-1">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <Input
-                type="email"
-                placeholder="Seu melhor e-mail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="pl-11 py-6 rounded-full border-2 border-muted focus:border-primary transition-colors"
-              />
-            </div>
-            <Button 
-              type="submit"
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-            >
-              Quero receber!
-            </Button>
-          </form>
+            <div className="ml-embedded" data-form="HSYvQA"></div>
+          </div>
         </div>
       </div>
     </section>

@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, BookOpen, Heart, Sparkles } from "lucide-react";
+import WaitlistModal from "@/components/WaitlistModal";
 
 const courses = [
   {
@@ -9,6 +11,7 @@ const courses = [
     icon: BookOpen,
     color: "terracotta",
     available: true,
+    link: "https://hotmart.com/pt-br/marketplace/produtos/100-dias-sem-caos-o-guia-essencial-para-maes-que-querem-viver-o-inicio-da-maternidade-com-leveza-seguranca-e-direcao/E104054938B",
   },
   {
     title: "Enxoval Simplificado",
@@ -17,6 +20,7 @@ const courses = [
     icon: Sparkles,
     color: "mustard",
     available: true,
+    link: "https://go.hotmart.com/R99344228M",
   },
   {
     title: "Carregue Amor",
@@ -25,6 +29,7 @@ const courses = [
     icon: Heart,
     color: "sage",
     available: true,
+    link: "https://go.hotmart.com/K96454840J",
   },
   {
     title: "Maternologia",
@@ -38,59 +43,74 @@ const courses = [
 ];
 
 const CoursesSection = () => {
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+
+  const handleCourseClick = (course: typeof courses[0]) => {
+    if (course.available && course.link) {
+      window.open(course.link, "_blank", "noopener,noreferrer");
+    } else if (!course.available) {
+      setIsWaitlistOpen(true);
+    }
+  };
+
   return (
-    <section id="cursos" className="py-24 bg-background">
-      <div className="container">
-        <h2 className="font-display text-3xl md:text-4xl font-medium text-center mb-4">
-          Nossos Cursos
-        </h2>
-        <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
-          Cada material foi criado com muito carinho para te apoiar em cada fase da sua jornada materna.
-        </p>
+    <>
+      <section id="cursos" className="py-24 bg-background">
+        <div className="container">
+          <h2 className="font-sans text-3xl md:text-4xl font-semibold text-center mb-4">
+            Nossos Cursos
+          </h2>
+          <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
+            Cada material foi criado com muito carinho para te apoiar em cada fase da sua jornada materna.
+          </p>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {courses.map((course, index) => {
-            const Icon = course.icon;
-            return (
-              <div
-                key={course.title}
-                className="group relative bg-card hover:bg-card/80 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl opacity-0 animate-fade-up border-b-4 border-transparent hover:border-primary"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {course.badge && (
-                  <span className="absolute top-4 right-4 bg-sage text-white text-xs font-medium px-3 py-1 rounded-full">
-                    {course.badge}
-                  </span>
-                )}
-                
-                <div className={`inline-flex p-3 rounded-xl bg-${course.color}/10 mb-6`}>
-                  <Icon className={`w-6 h-6 text-${course.color}`} />
-                </div>
-
-                <h3 className="font-display text-xl md:text-2xl font-medium mb-4">
-                  {course.title}
-                </h3>
-                
-                <p className="text-muted-foreground leading-relaxed mb-6">
-                  {course.description}
-                </p>
-
-                <Button 
-                  variant={course.available ? "default" : "outline"}
-                  className={`w-full md:w-auto ${
-                    course.available 
-                      ? "bg-primary hover:bg-primary/90" 
-                      : "border-sage text-sage hover:bg-sage hover:text-white"
-                  } rounded-full transition-all duration-300`}
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {courses.map((course, index) => {
+              const Icon = course.icon;
+              return (
+                <div
+                  key={course.title}
+                  className="group relative bg-card hover:bg-card/80 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl opacity-0 animate-fade-up border-b-4 border-transparent hover:border-primary"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  {course.buttonText}
-                </Button>
-              </div>
-            );
-          })}
+                  {course.badge && (
+                    <span className="absolute top-4 right-4 bg-sage text-white text-xs font-medium px-3 py-1 rounded-full">
+                      {course.badge}
+                    </span>
+                  )}
+                  
+                  <div className={`inline-flex p-3 rounded-xl bg-${course.color}/10 mb-6`}>
+                    <Icon className={`w-6 h-6 text-${course.color}`} />
+                  </div>
+
+                  <h3 className="font-sans text-xl md:text-2xl font-semibold mb-4">
+                    {course.title}
+                  </h3>
+                  
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    {course.description}
+                  </p>
+
+                  <Button 
+                    variant={course.available ? "default" : "outline"}
+                    onClick={() => handleCourseClick(course)}
+                    className={`w-full md:w-auto ${
+                      course.available 
+                        ? "bg-primary hover:bg-primary/90" 
+                        : "border-sage text-sage hover:bg-sage hover:text-white"
+                    } rounded-full transition-all duration-300`}
+                  >
+                    {course.buttonText}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <WaitlistModal open={isWaitlistOpen} onOpenChange={setIsWaitlistOpen} />
+    </>
   );
 };
 

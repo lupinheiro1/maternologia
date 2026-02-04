@@ -1,20 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Instagram } from "lucide-react";
+import luizaPhoto from "@/assets/luiza-pinheiro.webp";
 
 const AboutSection = () => {
   return (
     <section id="sobre" className="py-24 bg-blush/30">
       <div className="container">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center max-w-6xl mx-auto">
-          {/* Image Placeholder */}
+          {/* Image */}
           <div 
             className="relative opacity-0 animate-fade-up"
             style={{ animationDelay: "0.2s" }}
           >
-            <div className="aspect-[4/5] bg-gradient-to-br from-primary/20 to-sage/20 rounded-2xl overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                <span className="font-display text-xl">Foto da Luiza</span>
-              </div>
+            <div className="aspect-[4/5] rounded-2xl overflow-hidden">
+              <img
+                src={luizaPhoto}
+                alt="Foto de Luiza Pinheiro - Maternologia"
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
             </div>
             {/* Decorative elements */}
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-mustard/30 rounded-full blur-2xl -z-10" />
@@ -26,7 +30,7 @@ const AboutSection = () => {
             className="opacity-0 animate-fade-up"
             style={{ animationDelay: "0.4s" }}
           >
-            <h2 className="font-display text-3xl md:text-4xl font-medium mb-6">
+            <h2 className="font-sans text-3xl md:text-4xl font-semibold mb-6">
               Prazer, <span className="text-primary">Luiza Pinheiro</span> aqui!
             </h2>
 
