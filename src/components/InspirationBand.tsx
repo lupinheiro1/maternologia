@@ -21,11 +21,11 @@ const InspirationBand = () => {
   return (
     <>
       <section className="py-24 bg-sage text-white overflow-hidden">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="container overflow-hidden">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
             {/* Left Content */}
             <div className="opacity-0 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-              <p className="font-sans text-xl md:text-2xl lg:text-3xl leading-relaxed mb-8">
+              <p className="font-sans text-lg md:text-xl lg:text-2xl leading-relaxed mb-6">
                 O maternar realmente é um grande jardim, mas é bem mais legal de apreciar quando compartilhado. 
                 <span className="block mt-4">
                   Junte-se a nossa comunidade da Maternologia para criar novos ciclos, formar vínculos reais e viver a{" "}
@@ -36,7 +36,7 @@ const InspirationBand = () => {
               <Button 
                 size="lg"
                 onClick={() => setIsNewsletterOpen(true)}
-                className="bg-mustard hover:bg-mustard/90 text-foreground font-medium px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="bg-mustard hover:bg-mustard/90 text-foreground font-medium px-6 py-5 md:px-8 md:py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-sm md:text-base"
               >
                 Quero minha melhor maternidade possível
               </Button>
@@ -44,7 +44,7 @@ const InspirationBand = () => {
 
             {/* Right - Words Grid */}
             <div 
-              className="flex flex-wrap gap-3 md:gap-4 justify-center lg:justify-end opacity-0 animate-slide-in-right"
+              className="flex flex-wrap gap-2 md:gap-4 justify-center lg:justify-end opacity-0 animate-fade-up max-w-full"
               style={{ animationDelay: "0.4s" }}
             >
               {words.map((word, index) => (

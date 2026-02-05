@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,41 +12,38 @@ interface WaitlistModalProps {
 }
 
 const WaitlistModal = ({ open, onOpenChange }: WaitlistModalProps) => {
-  const [refreshKey, setRefreshKey] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load MailerLite script once globally
-    const w = window as any;
-    if (!w.ml) {
-      w.ml = function () {
-        (w.ml.q = w.ml.q || []).push(arguments);
+    if (open && containerRef.current) {
+      const container = containerRef.current;
+      
+      // Clear previous content
+      container.innerHTML = "";
+      
+      // Create new ml-embedded div
+      const mlDiv = document.createElement("div");
+      mlDiv.className = "ml-embedded";
+      mlDiv.setAttribute("data-form", "tbPNHH");
+      container.appendChild(mlDiv);
+      
+      // Remove any existing MailerLite scripts to force reload
+      const existingScripts = document.querySelectorAll('script[src*="mailerlite"]');
+      existingScripts.forEach(script => script.remove());
+      
+      // Reset ml function
+      (window as any).ml = function () {
+        ((window as any).ml.q = (window as any).ml.q || []).push(arguments);
       };
-      const l = document.createElement("script");
-      l.async = true;
-      l.src = "https://assets.mailerlite.com/js/universal.js";
-      const n = document.getElementsByTagName("script")[0];
-      n.parentNode?.insertBefore(l, n);
-      w.ml("account", "2088191");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      // Generate new key to force React to recreate the element
-      setRefreshKey(Date.now());
-
-      // Multiple refresh attempts with progressive delays
-      const timeouts = [200, 500, 1000].map((delay) =>
-        setTimeout(() => {
-          if ((window as any).ml) {
-            (window as any).ml("refresh");
-          }
-        }, delay)
-      );
-
-      return () => {
-        timeouts.forEach(clearTimeout);
+      
+      // Create and inject new script
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://assets.mailerlite.com/js/universal.js";
+      script.onload = () => {
+        (window as any).ml("account", "2088191");
       };
+      document.head.appendChild(script);
     }
   }, [open]);
 
@@ -62,7 +59,7 @@ const WaitlistModal = ({ open, onOpenChange }: WaitlistModalProps) => {
           E é claro que como fundadora, você terá a melhor condição! Te avisaremos
           quando estiver disponível!
         </p>
-        <div key={refreshKey} className="w-full">
+        <div ref={containerRef} className="w-full min-h-[120px]">
           <div className="ml-embedded" data-form="tbPNHH"></div>
         </div>
       </DialogContent>
