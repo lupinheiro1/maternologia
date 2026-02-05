@@ -1,147 +1,87 @@
 
 
-# Plano: Corrigir Modais + Newsletter Customizada + Nova Foto
+# Plano: Corrigir Modais MailerLite + Overflow Mobile
 
-## Resumo
+## Problema Identificado
 
-Vou implementar tres correcoes principais:
-1. **Modais funcionais** com formularios MailerLite carregando corretamente
-2. **Newsletter Section customizada** com campos de nome e email estilizados (conectados ao MailerLite)
-3. **Trocar foto da autora** para a nova imagem enviada
+Os logs mostram o erro: **"Invalid argument 'refresh' passed to MailerLite script"**
 
----
-
-## 1. Corrigir Modais do MailerLite
-
-### Problema
-Os formularios embarcados do MailerLite nao renderizam dentro dos modais porque o script nao detecta elementos adicionados ao DOM apos o carregamento inicial.
-
-### Solucao Tecnica
-- Usar `key` dinamico baseado em timestamp para forcar React a recriar o elemento `ml-embedded`
-- Implementar multiplas tentativas de `ml("refresh")` com intervalos progressivos (200ms, 500ms, 1000ms)
-- Garantir que o script so e inicializado uma vez globalmente
-
-### Arquivos Afetados
-- `src/components/NewsletterModal.tsx`
-- `src/components/WaitlistModal.tsx`
+O comando `ml("refresh")` **não existe** na API do MailerLite. A abordagem atual está completamente errada.
 
 ---
 
-## 2. Newsletter Section com Formulario Customizado
+## Solução para os Modais
 
-### Problema Atual
-A secao usa apenas `<div class="ml-embedded">` que renderiza o formulario padrao do MailerLite, sem controle visual.
+### Nova Abordagem Técnica
 
-### Nova Abordagem
-Criar um formulario customizado estilizado com:
-- Campo de **Nome** (Input do shadcn/ui)
-- Campo de **Email** (Input do shadcn/ui)
-- Botao de **Submit** estilizado
-- Formulario MailerLite **oculto** que recebe os dados e faz o submit real
+O MailerLite tem duas formas de exibir formulários:
 
-### Fluxo de Dados
+1. **Popups** (recomendado para modais): usar `window.ml("show", "FORM_ID", true)`
+2. **Embarcados**: reinjetar o script a cada abertura
+
+Como o formulário precisa aparecer dentro do Dialog do Radix UI, vou usar a técnica de **reinjeção do script** que força o MailerLite a escanear o DOM novamente.
+
+### Lógica Corrigida
 
 ```text
-Usuario preenche formulario customizado
-         |
-         v
-Ao clicar "Inscrever", JavaScript:
-  1. Preenche campos ocultos do MailerLite
-  2. Dispara submit do formulario MailerLite
-         |
-         v
-MailerLite processa e mostra mensagem de sucesso
+Quando modal abre:
+1. Limpar conteúdo anterior do container
+2. Reinserir o div ml-embedded com data-form
+3. Criar e injetar novo script tag do MailerLite
+4. Inicializar com ml("account", "2088191")
 ```
-
-### Design Visual
-
-```text
-+------------------------------------------+
-|      [icone] Newsletter quinzenal        |
-|                                          |
-|   Receba acolhimento na sua caixa...     |
-|   Reflexoes, conteudos exclusivos...     |
-|                                          |
-|   +----------------------------------+   |
-|   | Nome                             |   |
-|   +----------------------------------+   |
-|   +----------------------------------+   |
-|   | E-mail                           |   |
-|   +----------------------------------+   |
-|   +----------------------------------+   |
-|   |     Quero receber! [botao]       |   |
-|   +----------------------------------+   |
-|                                          |
-+------------------------------------------+
-```
-
-### Arquivos Afetados
-- `src/components/NewsletterSection.tsx` (reescrever com formulario customizado)
 
 ---
 
-## 3. Trocar Foto da Autora
+## Alterações Técnicas
 
-### Acao
-- Copiar `user-uploads://autor_luiza_resized.webp` para `src/assets/luiza-pinheiro.webp` (substituindo a atual)
-- Manter mesmo import no `AboutSection.tsx`
-
-### Arquivo Afetado
-- `src/assets/luiza-pinheiro.webp` (substituir)
-
----
-
-## Detalhes Tecnicos
-
-### NewsletterSection.tsx - Nova Estrutura
+### NewsletterModal.tsx
 
 ```text
 Estado:
-- name: string
-- email: string
-- isSubmitting: boolean
-- isSuccess: boolean
+- Remover refreshKey (não funciona)
 
-Logica:
-1. Renderizar formulario MailerLite oculto (visibility: hidden, height: 0)
-2. Formulario customizado visivel com inputs estilizados
-3. No submit:
-   a. Buscar inputs dentro do ml-embedded oculto
-   b. Preencher com valores do state
-   c. Disparar click no botao submit do MailerLite
-   d. Mostrar feedback de sucesso
+useEffect (quando open = true):
+1. Limpar container do formulário
+2. Criar novo div.ml-embedded com data-form="HSYvQA"
+3. Criar novo script element
+4. Injetar no container
+5. Quando script carrega, chamar ml("account", "2088191")
 ```
 
-### Modais - Logica de Refresh Melhorada
+### WaitlistModal.tsx
+
+Mesma lógica, com data-form="tbPNHH"
+
+---
+
+## Correção do Overflow Mobile (Faixa Verde)
+
+### InspirationBand.tsx
 
 ```text
-useEffect quando open = true:
-1. Gerar refreshKey unico (Date.now())
-2. Carregar script MailerLite se nao existir
-3. Tentar ml("refresh") em:
-   - 200ms
-   - 500ms
-   - 1000ms
-4. Usar MutationObserver para detectar quando form renderizou
+Alterações:
+1. Adicionar overflow-hidden ao container interno
+2. Limitar largura máxima do grid de palavras no mobile
+3. Reduzir padding do texto em telas pequenas
 ```
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Alteracao |
+| Arquivo | Alteração |
 |---------|-----------|
-| `src/assets/luiza-pinheiro.webp` | Substituir pela nova foto |
-| `src/components/NewsletterSection.tsx` | Formulario customizado com nome + email |
-| `src/components/NewsletterModal.tsx` | Key dinamico + multiplas tentativas de refresh |
-| `src/components/WaitlistModal.tsx` | Key dinamico + multiplas tentativas de refresh |
+| `src/components/NewsletterModal.tsx` | Reinjeção do script MailerLite |
+| `src/components/WaitlistModal.tsx` | Reinjeção do script MailerLite |
+| `src/components/InspirationBand.tsx` | Adicionar overflow-hidden e ajustar responsividade |
 
 ---
 
 ## Resultado Esperado
 
-- Modais abrem com formularios do MailerLite visiveis e funcionais
-- Secao Newsletter tem visual customizado alinhado ao design do site
-- Campos de nome e email integrados com MailerLite
-- Foto da autora atualizada com a nova imagem
+- Formulários do MailerLite aparecem corretamente nos modais
+- Campos de email e botão de submit visíveis
+- Sem barra de rolagem horizontal no mobile
+- Texto da faixa verde não cortado
 
