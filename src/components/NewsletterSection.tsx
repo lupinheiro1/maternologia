@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { Sparkles, Loader2, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,74 +9,35 @@ const NewsletterSection = () => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const hiddenFormRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Load MailerLite script
-    const w = window as any;
-    if (!w.ml) {
-      w.ml = function () {
-        (w.ml.q = w.ml.q || []).push(arguments);
-      };
-      const l = document.createElement("script");
-      l.async = true;
-      l.src = "https://assets.mailerlite.com/js/universal.js";
-      const n = document.getElementsByTagName("script")[0];
-      n.parentNode?.insertBefore(l, n);
-      w.ml("account", "2088191");
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim() || !email.trim()) return;
-    
+
     setIsSubmitting(true);
 
-    // Find the hidden MailerLite form and fill it
-    const hiddenContainer = hiddenFormRef.current;
-    if (hiddenContainer) {
-      const form = hiddenContainer.querySelector("form");
-      const nameInput = hiddenContainer.querySelector('input[name="fields[name]"], input[type="text"]') as HTMLInputElement;
-      const emailInput = hiddenContainer.querySelector('input[type="email"]') as HTMLInputElement;
-      const submitButton = hiddenContainer.querySelector('button[type="submit"]') as HTMLButtonElement;
-
-      if (emailInput) {
-        emailInput.value = email;
-        emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-
-      if (nameInput) {
-        nameInput.value = name;
-        nameInput.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-
-      // Small delay to ensure values are set, then submit
-      setTimeout(() => {
-        if (submitButton) {
-          submitButton.click();
-        } else if (form) {
-          form.dispatchEvent(new Event("submit", { bubbles: true }));
+    try {
+      await fetch(
+        "https://assets.mailerlite.com/jsonp/2088191/forms/178470332560049977/subscribe",
+        {
+          method: "POST",
+          body: new URLSearchParams({
+            "fields[email]": email,
+            "fields[name]": name,
+            ml_submitted: "1",
+          }),
+          mode: "no-cors",
         }
-        
-        // Show success after a delay
-        setTimeout(() => {
-          setIsSubmitting(false);
-          setIsSuccess(true);
-          setName("");
-          setEmail("");
-        }, 1500);
-      }, 100);
-    } else {
-      // Fallback if form not found
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setIsSuccess(true);
-        setName("");
-        setEmail("");
-      }, 1000);
+      );
+    } catch {
+      // network error — submission may not have gone through
     }
+
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    setName("");
+    setEmail("");
   };
 
   return (
@@ -178,15 +139,6 @@ const NewsletterSection = () => {
                 </p>
               </form>
             )}
-          </div>
-
-          {/* Hidden MailerLite form for actual submission */}
-          <div 
-            ref={hiddenFormRef}
-            className="absolute -left-[9999px] opacity-0 pointer-events-none"
-            aria-hidden="true"
-          >
-            <div className="ml-embedded" data-form="HSYvQA"></div>
           </div>
         </div>
       </div>

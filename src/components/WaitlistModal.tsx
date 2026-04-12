@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { Loader2, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -21,73 +22,35 @@ const WaitlistModal = ({ open, onOpenChange }: WaitlistModalProps) => {
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const hiddenFormRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const w = window as any;
-    if (!w.ml) {
-      w.ml = function () {
-        (w.ml.q = w.ml.q || []).push(arguments);
-      };
-      const s = document.createElement("script");
-      s.async = true;
-      s.src = "https://assets.mailerlite.com/js/universal.js";
-      document.head.appendChild(s);
-      w.ml("account", "2088191");
-    }
-  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
     setIsSubmitting(true);
 
-    const container = hiddenFormRef.current;
-    if (container) {
-      const form = container.querySelector("form");
-      const nameInput = container.querySelector('input[name="fields[name]"], input[type="text"]') as HTMLInputElement;
-      const emailInput = container.querySelector('input[type="email"]') as HTMLInputElement;
-      const submitButton = container.querySelector('button[type="submit"]') as HTMLButtonElement;
-
-      if (emailInput) {
-        emailInput.value = email;
-        emailInput.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      if (nameInput) {
-        nameInput.value = name;
-        nameInput.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-
-      const phoneInput = container.querySelector('input[name="fields[phone]"]') as HTMLInputElement;
-      if (phoneInput) {
-        phoneInput.value = phone;
-        phoneInput.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-
-      setTimeout(() => {
-        if (submitButton) {
-          submitButton.click();
-        } else if (form) {
-          form.dispatchEvent(new Event("submit", { bubbles: true }));
+    try {
+      await fetch(
+        "https://assets.mailerlite.com/jsonp/2088191/forms/178470825341486265/subscribe",
+        {
+          method: "POST",
+          body: new URLSearchParams({
+            "fields[email]": email,
+            "fields[name]": name,
+            ...(phone.trim() ? { "fields[phone]": phone } : {}),
+            ml_submitted: "1",
+          }),
+          mode: "no-cors",
         }
-        setTimeout(() => {
-          setIsSubmitting(false);
-          setIsSuccess(true);
-          setName("");
-          setEmail("");
-          setPhone("");
-        }, 1500);
-      }, 100);
-    } else {
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setIsSuccess(true);
-        setName("");
-        setEmail("");
-        setPhone("");
-      }, 1000);
+      );
+    } catch {
+      // network error — submission may not have gone through
     }
+
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    setName("");
+    setEmail("");
+    setPhone("");
   };
 
   return (
@@ -97,6 +60,9 @@ const WaitlistModal = ({ open, onOpenChange }: WaitlistModalProps) => {
           <DialogTitle className="text-xl font-semibold text-center leading-relaxed">
             Parabéns pela escolha!
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Formulário de inscrição na lista de espera
+          </DialogDescription>
         </DialogHeader>
         <p className="text-muted-foreground text-center leading-relaxed mb-2">
           E é claro que como fundadora, você terá a melhor condição! Te avisaremos
@@ -167,14 +133,6 @@ const WaitlistModal = ({ open, onOpenChange }: WaitlistModalProps) => {
           </form>
         )}
 
-        {/* Hidden MailerLite form */}
-        <div
-          ref={hiddenFormRef}
-          className="absolute -left-[9999px] opacity-0 pointer-events-none"
-          aria-hidden="true"
-        >
-          <div className="ml-embedded" data-form="tbPNHH"></div>
-        </div>
       </DialogContent>
     </Dialog>
   );
