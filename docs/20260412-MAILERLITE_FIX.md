@@ -147,6 +147,69 @@ import { DialogDescription } from "@/components/ui/dialog";
 
 ---
 
+## Deploy — Integração GitHub + HostGator
+
+### Opção A — Git Version Control do cPanel *(mais simples)*
+
+O cPanel do HostGator tem módulo nativo **"Git™ Version Control"**:
+
+1. cPanel → **Git™ Version Control** → Create
+2. Clone URL: `https://github.com/lupinheiro1/maternologia.git`
+3. Repository Path: pasta raiz do site (ex: `/home/user/public_html`)
+
+**Limitação:** não roda `npm run build` automaticamente — como o site é compilado (Vite), o `dist/` precisa estar commitado no repo, ou rodar o build manualmente via terminal SSH do cPanel.
+
+### Opção B — GitHub Actions → deploy FTP automático *(recomendada)*
+
+Workflow que a cada push na `main`: roda `npm run build` → sobe os arquivos do `dist/` para o HostGator via FTP/SFTP automaticamente.
+
+**Pré-requisitos:**
+- Credenciais FTP do HostGator (usuário, senha, host ftp)
+- Criar arquivo `.github/workflows/deploy.yml` no repo
+- Configurar os valores como **GitHub Secrets** (Settings → Secrets → Actions):
+  - `FTP_SERVER` — ex: `ftp.maternologia.com.br`
+  - `FTP_USERNAME` — usuário FTP do HostGator
+  - `FTP_PASSWORD` — senha FTP do HostGator
+
+**Workflow `.github/workflows/deploy.yml`:**
+
+```yaml
+name: Deploy to HostGator
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: /public_html/
+```
+
+**Resultado:** cada `git push main` faz o deploy completo automaticamente, sem entrar no cPanel.
+
+---
+
 *Gerado em 12/04/2026 — GitHub Copilot (Claude Sonnet 4.6)*
 
 ---
