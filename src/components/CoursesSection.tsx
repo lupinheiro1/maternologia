@@ -1,3 +1,11 @@
+/**
+ * @file CoursesSection.tsx
+ * @modified 2026-07-12
+ * @authors Marcelo Arana + Claude Sonnet 5
+ * @reason Card "100 Dias Sem Caos" levava direto pro checkout do Hotmart, pulando a landing page
+ * @objective Levar o clique pra landing dedicada (maternologia.com.br/100-dias-sem-caos/) em vez do checkout
+ * @solution Troca o link do card de checkout Hotmart pra URL da landing
+ */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, BookOpen, Heart, Sparkles } from "lucide-react";
@@ -11,7 +19,7 @@ const courses = [
     icon: BookOpen,
     color: "terracotta",
     available: true,
-    link: "https://hotmart.com/pt-br/marketplace/produtos/100-dias-sem-caos-o-guia-essencial-para-maes-que-querem-viver-o-inicio-da-maternidade-com-leveza-seguranca-e-direcao/E104054938B",
+    link: "https://maternologia.com.br/100-dias-sem-caos/",
   },
   {
     title: "Enxoval Simplificado",
